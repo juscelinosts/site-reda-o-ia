@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redação ENEM & IA | Treinamento Inteligente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
+        
+        :root {
+            --primary: #4f46e5;
+            --secondary: #64748b;
+            --accent: #f59e0b;
+            --bg-light: #f8fafc;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-light);
+            color: #1e293b;
+            overflow-x: hidden;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+        }
+
+        .nav-active {
+            color: var(--primary);
+            background: rgba(79, 70, 229, 0.1);
+            border-right: 4px solid var(--primary);
+        }
+
+        @keyframes fastPop {
+            0% { opacity: 0; transform: translateY(-10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fast-pop {
+            animation: fastPop 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        .tutor-message {
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+        .tutor-message strong {
+            color: #4f46e5;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <!-- Interface de Entrada -->
+    <div id="login-layout" class="flex min-h-screen items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 md:p-10 rounded-3xl shadow-xl max-w-md w-full text-center border border-slate-200 animate-fast-pop">
+            <div class="w-20 h-20 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg mx-auto mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-10 h-10">
+                    <path d="M20.25 3.75a.75.75 0 0 0-1.5 0v1.5h-1.5a.75.75 0 0 0 0 1.5h1.5v1.5a.75.75 0 0 0 1.5 0v-1.5h1.5a.75.75 0 0 0 0-1.5h-1.5v-1.5Z" />
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 22.5c-3.75-3.1-6.75-8-6.75-12.5v-3l6.75-5.25L18.75 7v3c0 4.5-3 9.4-6.75 12.5Zm0-4.5a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5Zm.75-5.25V5.25h-1.5v7.5h1.5Z" />
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-slate-800 mb-2">Redação<span class="text-indigo-600">ENEM</span></h2>
+            <p class="text-slate-500 mb-8">Bem-vindo! Vamos começar sua jornada rumo à nota máxima?</p>
+            
+            <div id="auth-loading" class="w-full text-center pb-4">
+                <div class="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p class="text-xs text-indigo-600 font-medium">Conectando ao servidor...</p>
+            </div>
+
+            <div id="login-form" class="space-y-4 hidden">
+                <input type="text" id="username-input" placeholder="Como você se chama?" onkeypress="if(event.key==='Enter')window.handleLogin()" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 text-center text-lg font-semibold outline-none transition-all">
+                <button onclick="window.handleLogin()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-indigo-700 active:scale-95 transition-all shadow-md">Aceder à Plataforma 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Layout Principal -->
+    <div id="main-layout" class="hidden flex min-h-screen">
+        <aside class="w-64 bg-white border-r border-slate-200 hidden lg:flex flex-col fixed h-full z-40">
+            <div class="p-6 flex items-center space-x-3">
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M12 22.5c-3.75-3.1-6.75-8-6.75-12.5v-3l6.75-5.25L18.75 7v3c0 4.5-3 9.4-6.75 12.5Z" /></svg>
+                </div>
+                <h1 class="text-lg font-bold">Redação<span class="text-indigo-600">ENEM</span></h1>
+            </div>
+            <nav class="flex-grow mt-4 px-4 space-y-2">
+                <button onclick="window.navigate('dashboard')" id="btn-dashboard" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all font-semibold text-slate-600 hover:bg-slate-50 nav-active">📊 Dashboard</button>
+                <button onclick="window.navigate('redacao')" id="btn-redacao" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all font-semibold text-slate-600 hover:bg-slate-50">✍️ Escrever</button>
+                <button onclick="window.navigate('repertorio')" id="btn-repertorio" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all font-semibold text-slate-600 hover:bg-slate-50">🧠 Repertório</button>
+                <button onclick="window.navigate('estrutura')" id="btn-estrutura" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all font-semibold text-slate-600 hover:bg-slate-50">🏗️ Estrutura</button>
+                <button onclick="window.navigate('tutor')" id="btn-tutor" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all font-semibold text-slate-600 hover:bg-slate-50">🤖 Tutor IA</button>
+            </nav>
+        </aside>
+
+        <main class="flex-grow lg:ml-64 p-4 md:p-8 w-full max-w-7xl mx-auto flex flex-col min-h-screen">
+            <div id="top-nav" class="flex items-center justify-between mb-4 h-12">
+                <button id="back-button" onclick="window.goBack()" class="hidden flex items-center gap-2 px-4 py-2 text-slate-500 hover:text-indigo-600 font-bold transition-all bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                    </svg>
+                    <span>Voltar</span>
+                </button>
+            </div>
+
+            <div id="app-container" class="flex-grow"></div>
+
+            <!-- Dashboard de Desempenho Inferior -->
+            <section id="performance-summary" class="mt-6 bg-white rounded-3xl border border-slate-200 shadow-sm p-6 animate-fast-pop">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shadow-inner">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                                <path d="M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.036-.84-1.875-1.875-1.875h-.75ZM9.75 8.625c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-.75a1.875 1.875 0 0 1-1.875-1.875V8.625ZM3 13.125c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v6.75c0 1.035-.84 1.875-1.875 1.875h-.75A1.875 1.875 0 0 1 3 19.875v-6.75Z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-lg leading-tight">Resumo de Desempenho</h3>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Evolução em Tempo Real</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-6 md:gap-12 text-center flex-grow">
+                        <div><p class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Média</p><p id="stat-avg" class="text-xl font-black text-indigo-600">--</p></div>
+                        <div><p class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Textos</p><p id="stat-count" class="text-xl font-black text-slate-800">--</p></div>
+                        <div><p class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Recorde</p><p id="stat-best" class="text-xl font-black text-emerald-500">--</p></div>
+                    </div>
+                    <div class="hidden lg:block w-32 shrink-0">
+                        <div class="bg-slate-100 h-2 w-full rounded-full overflow-hidden"><div id="stat-progress-bar" class="h-full bg-indigo-500 transition-all duration-1000" style="width: 0%"></div></div>
+                        <p class="text-[8px] font-bold text-slate-400 text-center mt-1 uppercase">Meta Nota 1000</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Rodapé Informativo -->
+            <footer class="mt-6 py-6 border-t border-slate-200 text-center">
+                <p class="text-slate-400 text-[10px] font-bold tracking-widest uppercase">
+                    Desenvolvido por <span class="text-indigo-500">Juscelino</span> com IA
+                </p>
+            </footer>
+        </main>
+
+        <!-- Modais -->
+        <div id="saved-essays-modal" class="fixed inset-0 bg-slate-900/40 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-all">
+            <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col animate-fast-pop overflow-hidden">
+                <div class="p-8 border-b flex justify-between items-center bg-white">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">📚 Minhas Redações</h2>
+                        <p class="text-xs text-slate-400 uppercase tracking-widest font-bold">Histórico detalhado</p>
+                    </div>
+                    <button onclick="window.closeSavedEssays()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:text-red-500 transition-colors">&times;</button>
+                </div>
+                <div id="saved-essays-list" class="p-8 overflow-y-auto flex-grow space-y-6 bg-slate-50"></div>
+            </div>
+        </div>
+        <div id="score-history-modal" class="fixed inset-0 bg-slate-900/40 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-all">
+            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col animate-fast-pop">
+                <div class="p-6 border-b flex justify-between items-center"><h2 class="text-2xl font-bold text-slate-800">📈 Histórico</h2><button onclick="window.closeScoreHistory()" class="text-3xl text-slate-400 hover:text-red-500">&times;</button></div>
+                <div id="score-history-list" class="p-6 overflow-y-auto space-y-3 bg-slate-50"></div>
+            </div>
+        </div>
+        <div id="difficulty-history-modal" class="fixed inset-0 bg-slate-900/40 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-all">
+            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col animate-fast-pop">
+                <div class="p-8 border-b flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">🎯 Diagnóstico de Performance</h2>
+                        <p class="text-xs text-slate-400 font-bold uppercase tracking-tighter">Resumo consolidado de dificuldades</p>
+                    </div>
+                    <button onclick="window.closeDifficultyHistory()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:text-red-500">&times;</button>
+                </div>
+                <div id="difficulty-content" class="p-8 bg-slate-50 text-slate-700 leading-relaxed text-sm tutor-message overflow-y-auto"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-2xl z-[100] text-sm font-bold opacity-0 transition-all pointer-events-none scale-90"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // =========================================================================
+        // CONFIGURAÇÕES (Somente modifique isso quando for publicar o site)
+        // =========================================================================
+        const MINHA_CHAVE_GEMINI = "AIzaSyDy0bbSBNNsvOlfLChuhGDczVql4bbKRNg"; // Cole a chave gerada no Google AI Studio
+        
+        const firebaseConfig = {
+    apiKey: "AIzaSyC3L513dBizEKNlgYtK7VaHvCVy9Wwg45g",
+    authDomain: "site-rdc.firebaseapp.com",
+    projectId: "site-rdc",
+    storageBucket: "site-rdc.firebasestorage.app",
+    messagingSenderId: "281431059000",
+    appId: "1:281431059000:web:e910b401af6ec76bf554cd",
+    measurementId: "G-MX4E9PSQ6B"
+  };
+        // =========================================================================
+
+        // Detecção segura do ambiente
+        const isCanvasEnv = typeof __firebase_config !== 'undefined';
+        const firebaseConfig = isCanvasEnv ? JSON.parse(__firebase_config) : MEU_FIREBASE_CONFIG;
+        const apiKey = isCanvasEnv ? "" : MINHA_CHAVE_GEMINI;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'redacao-enem-app';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        let currentUserId = null;
+
+        const state = {
+            user: null,
+            currentTheme: "Os impactos do aquecimento global na economia brasileira",
+            currentEssayResult: null,
+            navigationHistory: []
+        };
+
+        let dashEvolutionChartInstance = null;
+        let dashCompetencyRadarInstance = null;
+        let currentAudioPlayer = null;
+
+        // --- Formatação e Utilidades ---
+        function formatResponseText(text) {
+            if (!text) return "";
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\*/g, '');
+        }
+
+        function pcmBase64ToWavUrl(base64, sampleRate = 24000) {
+            const binaryString = window.atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) bytes[i] = binaryString.charCodeAt(i);
+            
+            const buffer = new ArrayBuffer(44 + bytes.length);
+            const view = new DataView(buffer);
+            
+            view.setUint32(0, 0x52494646, false); // RIFF
+            view.setUint32(4, 36 + bytes.length, true);
+            view.setUint32(8, 0x57415645, false); // WAVE
+            view.setUint32(12, 0x666D7420, false); // fmt
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true); // PCM
+            view.setUint16(22, 1, true); // 1 canal
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            view.setUint32(36, 0x64617461, false); // data
+            view.setUint32(40, bytes.length, true);
+            
+            new Uint8Array(buffer, 44).set(bytes);
+            const blob = new Blob([view], { type: 'audio/wav' });
+            return URL.createObjectURL(blob);
+        }
+
+        function updatePerformanceSummary() {
+            if (!state.user) return;
+            const history = state.user.essayHistory || [];
+            const count = history.length;
+            const avg = count > 0 ? Math.round(history.reduce((a, b) => a + b, 0) / count) : 0;
+            const best = count > 0 ? Math.max(...history) : 0;
+
+            const avgEl = document.getElementById('stat-avg');
+            const countEl = document.getElementById('stat-count');
+            const bestEl = document.getElementById('stat-best');
+            const barEl = document.getElementById('stat-progress-bar');
+
+            if (avgEl) avgEl.innerText = count > 0 ? avg : '--';
+            if (countEl) countEl.innerText = count;
+            if (bestEl) bestEl.innerText = count > 0 ? best : '--';
+            if (barEl) barEl.style.width = `${Math.min((avg / 1000) * 100, 100)}%`;
+        }
+
+        let toastTimeout;
+        function showToast(m, duration = 4000) { 
+            const t = document.getElementById('toast'); 
+            if (!t) return;
+            t.innerText = m; 
+            t.classList.remove('opacity-0', 'pointer-events-none', 'scale-90');
+            t.classList.add('opacity-100', 'scale-100'); 
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => { 
+                t.classList.add('opacity-0', 'pointer-events-none', 'scale-90'); 
+                t.classList.remove('opacity-100', 'scale-100');
+            }, duration); 
+        }
+
+        // --- Motores Gemini ---
+        async function callGemini(prompt, sys = "", schema = null) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = { contents: [{ parts: [{ text: prompt }] }] };
+
+            if (sys) payload.systemInstruction = { parts: [{ text: sys }] };
+            if (schema) {
+                payload.generationConfig = { responseMimeType: "application/json", responseSchema: schema };
+            }
+            
+            let retries = 5;
+            let delays = [1000, 2000, 4000, 8000, 16000];
+            
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, { 
+                        method: "POST", 
+                        headers: { "Content-Type": "application/json" }, 
+                        body: JSON.stringify(payload) 
+                    });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const data = await response.json();
+                    return data.candidates?.[0]?.content?.parts?.[0]?.text;
+                } catch (e) { 
+                    if (i === retries - 1) {
+                        showToast("Sistema IA ocupado. Tente novamente em instantes.");
+                        return null;
+                    }
+                    await new Promise(r => setTimeout(r, delays[i]));
+                }
+            }
+        }
+
+        async function callGeminiTTS(textToRead) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: textToRead }] }],
+                generationConfig: {
+                    responseModalities: ["AUDIO"],
+                    speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } }
+                },
+                model: "gemini-2.5-flash-preview-tts"
+            };
+
+            let retries = 3;
+            let delays = [1000, 2000, 4000];
+
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, { 
+                        method: "POST", 
+                        headers: { "Content-Type": "application/json" }, 
+                        body: JSON.stringify(payload) 
+                    });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const data = await response.json();
+                    
+                    const inlineData = data.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+                    if (!inlineData) return null;
+                    
+                    const rateMatch = inlineData.mimeType.match(/rate=(\d+)/);
+                    const sampleRate = rateMatch ? parseInt(rateMatch[1], 10) : 24000;
+                    
+                    return pcmBase64ToWavUrl(inlineData.data, sampleRate);
+                } catch (error) {
+                    if (i === retries - 1) return null;
+                    await new Promise(r => setTimeout(r, delays[i]));
+                }
+            }
+        }
+
+        // --- Navegação ---
+        window.navigate = (id, saveHistory = true) => {
+            if (saveHistory && state.currentSection && state.currentSection !== id) {
+                state.navigationHistory.push(state.currentSection);
+            }
+            state.currentSection = id;
+            document.getElementById('app-container').innerHTML = templates[id]();
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('nav-active', b.id === `btn-${id}`));
+            const backBtn = document.getElementById('back-button');
+            if (backBtn) {
+                if (id === 'dashboard') {
+                    backBtn.classList.add('hidden');
+                    state.navigationHistory = [];
+                } else {
+                    backBtn.classList.remove('hidden');
+                }
+            }
+            
+            if (currentAudioPlayer) currentAudioPlayer.pause();
+            if (id === 'dashboard') setTimeout(initDashboardCharts, 100);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.goBack = () => {
+            if (state.navigationHistory.length > 0) {
+                const prev = state.navigationHistory.pop();
+                window.navigate(prev, false);
+            } else {
+                window.navigate('dashboard', false);
+            }
+        }
+
+        // --- Handlers ---
+        window.handleLogin = async () => {
+            const name = document.getElementById('username-input').value.trim();
+            if (!name) return;
+            state.user = { name, essayHistory: [], savedEssays: [], lastCompetencies: [0,0,0,0,0] };
+            await saveUserProfile();
+            document.getElementById('login-layout').classList.add('hidden');
+            document.getElementById('main-layout').classList.remove('hidden');
+            updatePerformanceSummary();
+            window.navigate('dashboard', false);
+        };
+
+        window.handleGenerateTheme = async () => {
+            const btn = document.getElementById('theme-btn');
+            if(btn) btn.disabled = true;
+            showToast("A gerar tema inédito... ✨");
+            const res = await callGemini("Gere um tema de redação ENEM inédito e atual. Retorne APENAS o título do tema, sem aspas, sem introduções.");
+            if (res) { 
+                state.currentTheme = res.trim().replace(/"/g, ''); 
+                document.getElementById('redacao-tema').innerText = `"${state.currentTheme}"`; 
+                const brainPanel = document.getElementById('brainstorm-panel');
+                if (brainPanel) brainPanel.classList.add('hidden');
+                showToast("✅ Novo tema gerado com sucesso!");
+            } else {
+                showToast("Não foi possível gerar um tema agora. Tente novamente.");
+            }
+            if(btn) btn.disabled = false;
+        };
+
+        window.handleCustomTheme = () => {
+            const val = document.getElementById('custom-theme-input').value.trim();
+            if (val) { state.currentTheme = val; document.getElementById('redacao-tema').innerText = `"${val}"`; showToast("✅ Tema aplicado!"); }
+        };
+
+        window.handleBrainstorm = async () => {
+            const panel = document.getElementById('brainstorm-panel');
+            const btn = document.getElementById('brainstorm-btn');
+            panel.classList.remove('hidden');
+            panel.innerHTML = `<div class="flex items-center gap-2"><div class="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>A gerar ideias... ✨</div>`;
+            btn.disabled = true;
+
+            const prompt = `Para o tema "${state.currentTheme}", sugira: 2 argumentos e 1 agente de intervenção. Seja direto.`;
+            const res = await callGemini(prompt);
+
+            if (res) {
+                panel.innerHTML = `<strong class="text-indigo-800 block mb-2">💡 Sugestões:</strong><div class="tutor-message text-indigo-900">${formatResponseText(res)}</div>`;
+            } else {
+                panel.innerHTML = "Falha ao gerar ideias.";
+            }
+            btn.disabled = false;
+        };
+
+        window.handleEnhanceText = async () => {
+            const textarea = document.getElementById('essay-input');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            
+            if (!selectedText || selectedText.length < 15) return showToast("Selecione pelo menos uma frase completa!");
+            
+            showToast("A melhorar trecho... ✨", 6000);
+            const prompt = `Reescreva este trecho de redação com vocabulário mais rico e coeso. Retorne APENAS o trecho reescrito:\n"${selectedText}"`;
+            const res = await callGemini(prompt);
+            
+            if (res) {
+                textarea.setRangeText(res.trim(), start, end, 'select');
+                window.updateWordCount();
+                showToast("✅ Trecho aprimorado!");
+            } else {
+                showToast("Falha ao aprimorar.");
+            }
+        };
+
+        window.handleAnalyzeEssay = async () => {
+            const text = document.getElementById('essay-input').value;
+            if (text.length < 50) return showToast("Texto muito curto para avaliação!");
+            document.getElementById('analyzing-overlay').classList.remove('hidden');
+            
+            const sys = `Você é um avaliador oficial do ENEM. Corrija rigorosamente.
+C1: Gramática. C2: Tema/Estrutura. C3: Argumentação. C4: Coesão. C5: Intervenção.
+Notas possíveis: 0, 40, 80, 120, 160, 200.`;
+
+            const essaySchema = {
+                type: "OBJECT",
+                properties: {
+                    c1: { type: "OBJECT", properties: { nota: { type: "INTEGER" }, explicacao: { type: "STRING" } } },
+                    c2: { type: "OBJECT", properties: { nota: { type: "INTEGER" }, explicacao: { type: "STRING" } } },
+                    c3: { type: "OBJECT", properties: { nota: { type: "INTEGER" }, explicacao: { type: "STRING" } } },
+                    c4: { type: "OBJECT", properties: { nota: { type: "INTEGER" }, explicacao: { type: "STRING" } } },
+                    c5: { type: "OBJECT", properties: { nota: { type: "INTEGER" }, explicacao: { type: "STRING" } } },
+                    total: { type: "INTEGER" },
+                    feedback_geral: { type: "STRING" }
+                }
+            };
+            
+            const res = await callGemini(`TEMA: ${state.currentTheme}\nREDAÇÃO:\n${text}`, sys, essaySchema);
+            document.getElementById('analyzing-overlay').classList.add('hidden');
+            
+            if (res) {
+                try {
+                    let data;
+                    try {
+                        data = JSON.parse(res);
+                    } catch (err) {
+                        const jsonMatch = res.match(/\{[\s\S]*\}/);
+                        if (!jsonMatch) throw new Error("JSON não encontrado");
+                        data = JSON.parse(jsonMatch[0]);
+                    }
+                    
+                    if (typeof data.total !== 'number' || !data.c1) throw new Error("JSON inválido");
+
+                    state.currentEssayResult = { 
+                        tema: state.currentTheme, texto: text, nota: data.total, 
+                        feedback: data.feedback_geral, competencias: [data.c1, data.c2, data.c3, data.c4, data.c5]
+                    };
+                    state.user.essayHistory.push(data.total);
+                    state.user.lastCompetencies = [data.c1.nota, data.c2.nota, data.c3.nota, data.c4.nota, data.c5.nota];
+                    await saveUserProfile();
+                    
+                    document.getElementById('results-panel').classList.remove('hidden');
+                    document.getElementById('final-score').innerText = data.total;
+                    document.getElementById('general-feedback-text').innerHTML = formatResponseText(data.feedback_geral);
+                    document.getElementById('tts-feedback-btn').innerText = "🔊 Ouvir Feedback ✨";
+                    document.getElementById('competencies-detail').innerHTML = [data.c1, data.c2, data.c3, data.c4, data.c5].map((c, i) => `
+                        <div class="bg-white border p-3 rounded-xl mb-2 shadow-sm">
+                            <div class="flex justify-between font-bold mb-1"><span>Competência ${i+1}</span><span class="text-indigo-600">${c.nota}/200</span></div>
+                            <p class="text-[10px] text-slate-500">${formatResponseText(c.explicacao)}</p>
+                        </div>`).join('');
+                    showToast("✅ Avaliação concluída!");
+                } catch(e) { 
+                    showToast("Ocorreu um erro ao processar a nota.");
+                }
+            } else {
+                showToast("Falha na avaliação.");
+            }
+        };
+
+        window.handleReadFeedback = async () => {
+            const btn = document.getElementById('tts-feedback-btn');
+            if (currentAudioPlayer && !currentAudioPlayer.paused) {
+                currentAudioPlayer.pause();
+                btn.innerText = "🔊 Ouvir Feedback ✨";
+                return;
+            }
+            if (!state.currentEssayResult?.feedback) return;
+
+            btn.innerText = "A gerar áudio... ⏳";
+            btn.disabled = true;
+
+            const audioUrl = await callGeminiTTS(`Sua nota foi ${state.currentEssayResult.nota}. ${state.currentEssayResult.feedback}`);
+            if (audioUrl) {
+                currentAudioPlayer = new Audio(audioUrl);
+                currentAudioPlayer.play();
+                btn.innerText = "⏸️ Pausar Leitura";
+                currentAudioPlayer.onended = () => btn.innerText = "🔊 Ouvir Novamente ✨";
+            } else {
+                btn.innerText = "⚠️ Erro de Áudio";
+            }
+            btn.disabled = false;
+        };
+
+        window.handleChatMessage = async () => {
+            const input = document.getElementById('chat-input');
+            const box = document.getElementById('chat-box');
+            const txt = input.value.trim(); if (!txt) return;
+            box.innerHTML += `<div class="flex justify-end"><span class="bg-indigo-600 text-white p-3 rounded-2xl inline-block text-sm shadow-md">${txt}</span></div>`;
+            input.value = "";
+            const res = await callGemini(txt, "Você é um monitor de redação ENEM especializado.");
+            if (res) box.innerHTML += `<div class="flex justify-start animate-fast-pop"><div class="bg-white border p-4 rounded-2xl text-slate-700 tutor-message shadow-sm">${formatResponseText(res)}</div></div>`;
+            box.scrollTop = box.scrollHeight;
+        };
+
+        window.handleSearchRepertorio = async () => {
+            const query = document.getElementById('repertorio-search-input').value.trim();
+            if (!query) return showToast("Pesquise algo!");
+            const grid = document.getElementById('repertorio-grid');
+            grid.innerHTML = "A pesquisar... ⏳";
+            const res = await callGemini(`Dê 3 repertórios para: ${query}`);
+            if (res) grid.innerHTML = `<div class="col-span-full p-6 border bg-white rounded-3xl text-sm leading-relaxed tutor-message shadow-inner">${formatResponseText(res)}</div>`;
+            else grid.innerHTML = "<p class='col-span-full text-center text-slate-400'>Falha ao buscar repertório.</p>";
+        };
+
+        window.handleExplainStructure = async (p, d) => {
+            document.getElementById('structure-content').classList.remove('hidden');
+            document.getElementById('structure-text').innerHTML = "A gerar explicação... ⏳";
+            const res = await callGemini(`Explique brevemente a parte de ${p} na redação ENEM.`);
+            if(res) document.getElementById('structure-text').innerHTML = `<div class="tutor-message text-sm">${formatResponseText(res)}</div>`;
+            else document.getElementById('structure-text').innerHTML = "<p class='text-red-500'>Falha ao carregar explicação.</p>";
+        };
+
+        window.updateWordCount = () => {
+            const val = document.getElementById('essay-input').value;
+            const lines = val ? val.split('\n').length + Math.floor(val.length / 85) : 0;
+            document.getElementById('word-count').innerText = `${Math.min(lines, 30)}/30 Linhas`;
+        };
+
+        window.handleSaveEssay = async () => { 
+            if(state.currentEssayResult) { 
+                if(!state.user.savedEssays) state.user.savedEssays = []; 
+                state.user.savedEssays.push(state.currentEssayResult); 
+                await saveUserProfile(); 
+                showToast("✅ Redação salva!"); 
+            } 
+        };
+
+        window.showScoreHistory = () => {
+            const list = document.getElementById('score-history-list');
+            list.innerHTML = state.user.essayHistory?.length ? state.user.essayHistory.map((n, i) => `<div class="p-4 bg-white border rounded-2xl flex justify-between items-center shadow-sm"><span class="font-bold text-slate-500">Nota #${i+1}</span><span class="text-xl font-black text-indigo-600">${n}</span></div>`).reverse().join('') : "<p class='text-center text-slate-400 py-4'>Sem histórico.</p>";
+            document.getElementById('score-history-modal').classList.remove('hidden');
+        };
+
+        window.showSavedEssays = () => {
+            const list = document.getElementById('saved-essays-list');
+            if (!state.user.savedEssays?.length) {
+                list.innerHTML = "<p class='text-center text-slate-400 py-4'>Nenhuma redação salva ainda.</p>";
+            } else {
+                list.innerHTML = state.user.savedEssays.map((e, idx) => `
+                    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm animate-fast-pop">
+                        <div class="flex justify-between items-start mb-4">
+                            <h4 class="font-bold text-slate-800 text-lg leading-tight w-2/3">${e.tema}</h4>
+                            <div class="text-right">
+                                <span class="text-3xl font-black text-indigo-600">${e.nota}</span>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Nota Final</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-5 gap-2 mb-4">
+                            ${e.competencias ? e.competencias.map((c, i) => `
+                                <div class="bg-slate-50 p-2 rounded-xl border border-slate-100 flex flex-col items-center">
+                                    <span class="text-[8px] font-bold text-slate-400 uppercase">C${i+1}</span>
+                                    <span class="text-sm font-bold text-slate-700">${c.nota}</span>
+                                </div>
+                            `).join('') : ''}
+                        </div>
+                        <div class="bg-indigo-50/30 p-4 rounded-2xl mb-4 text-xs text-slate-600 leading-relaxed italic line-clamp-3">"${e.texto}"</div>
+                        <div class="space-y-2">
+                            ${e.competencias ? e.competencias.map((c, i) => `
+                                <div class="text-[10px] text-slate-500 border-l-2 border-indigo-200 pl-3 py-1">
+                                    <strong class="text-indigo-600">C${i+1}:</strong> ${formatResponseText(c.explicacao)}
+                                </div>
+                            `).join('') : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('saved-essays-modal').classList.remove('hidden');
+        };
+
+        window.showDifficultyHistory = async () => {
+            const modal = document.getElementById('difficulty-history-modal');
+            modal.classList.remove('hidden');
+            const content = document.getElementById('difficulty-content');
+            if (!state.user.essayHistory?.length) { content.innerHTML = "Escreva sua primeira redação."; return; }
+            content.innerHTML = "A analisar histórico... ⏳";
+            const prompt = `Analise este histórico de notas do ENEM [${state.user.essayHistory.join(", ")}] e a performance atual [${state.user.lastCompetencies}]. Resuma quais são os erros recorrentes e o que trava a nota do aluno.`;
+            const res = await callGemini(prompt, "Especialista em análise de performance educacional.");
+            content.innerHTML = res ? formatResponseText(res) : "Erro na análise.";
+        };
+
+        window.closeScoreHistory = () => document.getElementById('score-history-modal').classList.add('hidden');
+        window.closeSavedEssays = () => document.getElementById('saved-essays-modal').classList.add('hidden');
+        window.closeDifficultyHistory = () => document.getElementById('difficulty-history-modal').classList.add('hidden');
+
+        // --- Firebase Flow ---
+        async function loadUserProfile() {
+            if (!currentUserId) return;
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'data', 'profile');
+                const snap = await getDoc(docRef);
+                if (snap.exists()) {
+                    state.user = snap.data();
+                    document.getElementById('login-layout').classList.add('hidden');
+                    document.getElementById('main-layout').classList.remove('hidden');
+                    updatePerformanceSummary();
+                    window.navigate('dashboard', false);
+                } else {
+                    document.getElementById('auth-loading').classList.add('hidden');
+                    document.getElementById('login-form').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error("Erro ao carregar perfil (Firebase Firestore):", error);
+                document.getElementById('auth-loading').innerHTML = `<div class="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 mt-4"><p class="font-bold text-sm mb-1">⚠️ Erro no Banco de Dados</p><p class="text-xs">O Firestore Database não foi criado ou está sem permissões.<br><br>Vá ao Firebase > <strong>Firestore Database</strong> > Create Database (escolha <strong>Modo Teste</strong>).</p></div>`;
+            }
+        }
+
+        async function saveUserProfile() {
+            if (!currentUserId || !state.user) return;
+            const docRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'data', 'profile');
+            await setDoc(docRef, state.user);
+            updatePerformanceSummary();
+        }
+
+        function initDashboardCharts() {
+            if (!state.user?.essayHistory?.length) return;
+            
+            const evoCtx = document.getElementById('dashEvolutionChart');
+            const radarCtx = document.getElementById('dashCompetencyRadar');
+            
+            if (!evoCtx || !radarCtx) return;
+
+            if (dashEvolutionChartInstance) dashEvolutionChartInstance.destroy();
+            if (dashCompetencyRadarInstance) dashCompetencyRadarInstance.destroy();
+
+            dashEvolutionChartInstance = new Chart(evoCtx, { type: 'line', data: { labels: state.user.essayHistory.map((_, i) => `R${i+1}`), datasets: [{ label: 'Nota', data: state.user.essayHistory, borderColor: '#4f46e5', tension: 0.3, fill: true, backgroundColor: 'rgba(79, 70, 229, 0.05)' }] }, options: { maintainAspectRatio: false, scales: { y: { min: 0, max: 1000 } } } });
+            dashCompetencyRadarInstance = new Chart(radarCtx, { type: 'radar', data: { labels: ['C1', 'C2', 'C3', 'C4', 'C5'], datasets: [{ label: 'Performance', data: state.user.lastCompetencies, backgroundColor: 'rgba(245, 158, 11, 0.2)', borderColor: '#f59e0b' }] }, options: { maintainAspectRatio: false, scales: { r: { min: 0, max: 200, ticks: { stepSize: 40 } } } } });
+        }
+
+        // --- Templates ---
+        const templates = {
+            dashboard: () => `
+                <div class="animate-fast-pop">
+                    <h2 class="text-3xl font-bold mb-6 tracking-tight">Olá, ${state.user.name}! 🚀</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                        <div onclick="window.showScoreHistory()" class="bg-white p-6 rounded-2xl border shadow-sm cursor-pointer hover:border-indigo-400 transition-all group">
+                            <p class="text-xs font-bold text-slate-400 uppercase">Sua Última Nota</p>
+                            <p class="text-4xl font-black text-indigo-600 mt-2">${state.user.essayHistory?.length > 0 ? state.user.essayHistory[state.user.essayHistory.length-1] : '--'}</p>
+                        </div>
+                        <div onclick="window.showSavedEssays()" class="bg-white p-6 rounded-2xl border shadow-sm cursor-pointer hover:border-emerald-400 transition-all group">
+                            <p class="text-xs font-bold text-slate-400 uppercase">Textos Salvos</p>
+                            <p class="text-4xl font-black text-slate-800 mt-2">${state.user.savedEssays?.length || 0}</p>
+                        </div>
+                        <div onclick="window.showDifficultyHistory()" class="bg-white p-6 rounded-2xl border shadow-sm cursor-pointer hover:border-amber-400 transition-all group">
+                            <p class="text-xs font-bold text-slate-400 uppercase">Diagnóstico</p>
+                            <p class="text-lg font-bold text-amber-600 mt-2">Dificuldades Atuais 🎯</p>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-lg mb-4 text-slate-700 uppercase tracking-tighter text-sm">🚀 Acesso Rápido</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+                        <button onclick="window.navigate('redacao')" class="bg-white p-6 rounded-2xl border shadow-sm hover:shadow-md hover:border-indigo-400 transition-all text-left">✍️ Escrever</button>
+                        <button onclick="window.navigate('repertorio')" class="bg-white p-6 rounded-2xl border shadow-sm hover:shadow-md hover:border-emerald-400 transition-all text-left">🧠 Repertório</button>
+                        <button onclick="window.navigate('estrutura')" class="bg-white p-6 rounded-2xl border shadow-sm hover:shadow-md hover:border-pink-400 transition-all text-left">🏗️ Estrutura</button>
+                        <button onclick="window.navigate('tutor')" class="bg-white p-6 rounded-2xl border shadow-sm hover:shadow-md hover:border-amber-400 transition-all text-left">🤖 Tutor IA</button>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-white p-6 rounded-3xl border shadow-sm h-80"><canvas id="dashEvolutionChart"></canvas></div>
+                        <div class="bg-white p-6 rounded-3xl border shadow-sm h-80"><canvas id="dashCompetencyRadar"></canvas></div>
+                    </div>
+                </div>
+            `,
+            redacao: () => `
+                <div class="max-w-6xl mx-auto animate-fast-pop">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                        <h2 class="text-3xl font-bold text-slate-800 tracking-tight">Simulador</h2>
+                        <div class="flex gap-2 w-full md:w-auto">
+                            <input type="text" id="custom-theme-input" placeholder="Seu tema..." class="flex-grow p-2 border rounded-xl outline-none text-sm shadow-inner">
+                            <button onclick="window.handleCustomTheme()" class="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-xl font-bold text-sm">Usar</button>
+                            <button onclick="window.handleGenerateTheme()" id="theme-btn" class="bg-slate-800 text-white px-6 py-2 rounded-xl font-bold text-sm">🎲 Novo</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2 space-y-4">
+                            <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100 relative">
+                                <p id="redacao-tema" class="text-xl font-bold text-indigo-900 leading-tight">"${state.currentTheme}"</p>
+                                <button onclick="window.handleBrainstorm()" id="brainstorm-btn" class="mt-4 bg-white text-indigo-700 text-xs font-bold py-2 px-4 rounded-xl border border-indigo-200 shadow-sm hover:bg-indigo-100 transition-all">💡 Gerar Argumentos ✨</button>
+                                <div id="brainstorm-panel" class="hidden mt-4 bg-indigo-100/50 p-4 rounded-xl border border-indigo-200 text-sm"></div>
+                            </div>
+                            <div class="bg-white rounded-2xl border shadow-sm overflow-hidden relative">
+                                <div class="bg-slate-50 px-6 py-3 border-b flex justify-between tracking-tight"><span class="text-sm font-bold">Folha Oficial</span><span id="word-count" class="text-xs">0/30 Linhas</span></div>
+                                <textarea id="essay-input" oninput="window.updateWordCount()" class="w-full h-[450px] p-6 outline-none text-lg resize-none leading-relaxed" placeholder="Comece o seu texto aqui..."></textarea>
+                                <div id="analyzing-overlay" class="hidden absolute inset-0 bg-white/90 flex flex-col items-center justify-center z-10"><div class="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div><p class="mt-4 font-bold text-indigo-800">A analisar a sua escrita...</p></div>
+                                <div class="p-4 border-t flex flex-wrap justify-between items-center gap-3">
+                                    <button onclick="window.handleEnhanceText()" class="text-sm font-bold text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl hover:bg-indigo-100 transition-colors">✍️ Melhorar Trecho ✨</button>
+                                    <button onclick="window.handleAnalyzeEssay()" id="analyze-btn" class="bg-indigo-600 text-white px-10 py-3 rounded-xl font-bold shadow-lg ml-auto">Finalizar e Corrigir ✨</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="results-panel" class="hidden space-y-6">
+                            <div class="bg-white p-6 rounded-2xl border shadow-xl animate-fast-pop">
+                                <div class="text-center py-4 border-b border-slate-100 mb-4"><p class="text-7xl font-black text-indigo-600" id="final-score">--</p></div>
+                                <div id="competencies-detail" class="space-y-3 mb-6"></div>
+                                <div class="bg-slate-50 p-4 rounded-xl mb-4 shadow-inner">
+                                    <p id="general-feedback-text" class="text-[11px] text-slate-700 leading-relaxed"></p>
+                                </div>
+                                <button onclick="window.handleReadFeedback()" id="tts-feedback-btn" class="w-full bg-slate-800 text-white py-3 rounded-xl font-bold mb-3 shadow-md hover:bg-slate-700 transition-all">🔊 Ouvir Feedback ✨</button>
+                                <button onclick="window.handleSaveEssay()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-emerald-700 transition-all">💾 Guardar Redação</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            repertorio: () => `
+                <div class="max-w-5xl mx-auto p-8 animate-fast-pop">
+                    <header class="text-center mb-10"><h2 class="text-3xl font-bold text-slate-800 mb-2">Repertórios 🧠</h2><p class="text-slate-500">Encontre a alusão perfeita para o seu texto.</p></header>
+                    <div class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100 mb-10">
+                        <div class="flex flex-col md:flex-row gap-3">
+                            <input type="text" id="repertorio-search-input" placeholder="Pesquise tema ou autor..." class="flex-grow p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-sm">
+                            <button onclick="window.handleSearchRepertorio()" class="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold">Pesquisar ✨</button>
+                        </div>
+                    </div>
+                    <div id="repertorio-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+                </div>
+            `,
+            estrutura: () => `<div class="p-8 animate-fast-pop text-center"><h2 class="text-2xl font-bold mb-6 text-slate-800">Estrutura Nota 1000</h2><div class="grid grid-cols-1 md:grid-cols-3 gap-4">${['Introdução', 'Desenvolvimento', 'Conclusão'].map(x => `<div onclick="window.handleExplainStructure('${x}', '')" class="p-6 border bg-white rounded-2xl cursor-pointer hover:border-indigo-400 text-center font-bold shadow-sm transition-all">${x}</div>`).join('')}</div><div id="structure-content" class="mt-8 p-6 bg-white border rounded-2xl hidden shadow-sm text-left"><div id="structure-text"></div></div></div>`,
+            tutor: () => `<div class="max-w-3xl mx-auto h-[75vh] flex flex-col bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl animate-fast-pop"><div class="p-6 bg-indigo-900 text-white font-bold tracking-tight">Tutor IA Especialista 🤖</div><div id="chat-box" class="flex-grow p-6 overflow-y-auto bg-slate-50 space-y-4 text-sm flex flex-col"></div><div class="p-4 bg-white border-t flex gap-2"><input id="chat-input" onkeypress="if(event.key==='Enter')window.handleChatMessage()" class="flex-grow p-4 bg-slate-100 rounded-xl outline-none" placeholder="Sua dúvida..."><button onclick="window.handleChatMessage()" class="bg-indigo-600 text-white px-8 rounded-2xl font-bold shadow-lg">Enviar ✨</button></div></div>`
+        };
+
+        // --- Inicialização ---
+        const initAuth = async () => {
+            try {
+                if (isCanvasEnv && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Erro de Autenticação Firebase:", error);
+                document.getElementById('auth-loading').innerHTML = `<div class="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 mt-4"><p class="font-bold text-sm mb-1">⚠️ Erro de Autenticação</p><p class="text-xs">O login não foi autorizado pelo servidor.<br><br>Vá ao Firebase > <strong>Authentication</strong> > Sign-in method > Ative o <strong>Anônimo (Anonymous)</strong>.</p></div>`;
+            }
+        };
+
+        initAuth().then(() => {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUserId = user.uid;
+                    loadUserProfile();
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>
